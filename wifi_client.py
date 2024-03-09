@@ -1,4 +1,4 @@
-import subprocess, shlex
+import subprocess, shlex, time
 class WifiClient():
     _data=[]
 
@@ -56,12 +56,15 @@ class WifiClient():
         return True
     
     def connect_to_wifi(self):
-        ssid=self.data[0]
-        identity=self.data[1]
-        password=self.data[2]
+        ssid=self._data[0]
+        identity=self._data[1]
+        password=self._data[2]
+        
 
+
+        network_info="ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\nupdate_config=1\ncountry=JP\n\n"
         # 新しいネットワーク情報を作成
-        network_info = f'network={{\n\tssid="{ssid}"\n'
+        network_info += f'network={{\n\tssid="{ssid}"\n'
 
         if not(identity) and password:
             network_info += f'\tpsk="{password}"\n'
@@ -72,26 +75,30 @@ class WifiClient():
         network_info += '}'
 
         # wpa_supplicant.confを書き換え
-        with open('/etc/wpa_supplicant/wpa_supplicant.conf', 'a') as file:
+        with open('/etc/wpa_supplicant/wpa_supplicant.conf', 'w') as file:
             file.write(network_info)
-
+        time.sleep(2.0)
         # WiFi設定を再読み込みして変更を反映
+        print("setting_wpa")
         subprocess.run(['wpa_cli', '-i', 'wlan0', 'reconfigure'])
+        print("setting_dhcp")
+        subprocess.run(['sudo','dhclient','-1','wlan0','&'])
         return True
 if __name__=="__main__":
     import requests
     tester=WifiClient()
-    print("セットデータ")
-    
     print(tester.check_data())
     print("接続")
     tester.connect()
     print(tester.read_proxy())
-    proxies = {
-            "http":"http://"+tester.read_proxy(),
-            "https":"http://"+tester.read_proxy()
-    }
-    response = requests.get("https://example.com", proxies=proxies, timeout=5)
+    if tester.read_proxy():
+        proxies = {
+                "http":"http://"+tester.read_proxy(),
+                "https":"http://"+tester.read_proxy()
+        }
+        response = requests.get("https://example.com", proxies=proxies, timeout=5)
+    else:
+        response = requests.get("https://example.com", timeout=5)
     print(200==response.status_code)
     print("切断")
     tester.disconnect()

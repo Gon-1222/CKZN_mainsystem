@@ -1,17 +1,22 @@
 import requests
+from variable import *
+
 class WebIO():
-    _api_domain = "https://example.com"
+    _api_domain = "https://chikuzenni-api.vercel.app"
     _request_pass = _api_domain + "/machine"
     #GET動作
     def get_status(self,proxy=None):
+        headers = {
+            'machine_ID': MACHINE_ID
+         }
         if proxy:
             proxies = {
             "http": proxy,
             "https": proxy
             }
-            response = requests.get(self._request_pass,proxies=proxies)
+            response = requests.get(self._request_pass,headers=headers,proxies=proxies)
         else:
-            response = requests.get(self._request_pass)
+            response = requests.get(self._request_pass,headers=headers)
         if response.status_code!=200:
             return None
         
@@ -19,20 +24,32 @@ class WebIO():
     
     #POST動作
     def post_status(self,status,proxy=None):
+        print("POST")
+        headers = {
+        'machine_ID': MACHINE_ID,
+        'COntent-Type':'application/json'
+        } 
         if proxy:
             proxies = {
             "http": proxy,
             "https": proxy
             }
-            response = requests.post('http://www.example.com', data={'status': status},proxies=proxies)
+            try:
+                response = requests.post(self._request_pass ,headers=headers, json={'status': status},proxies=proxies,timeout=(2.0,2.0))
+            except:
+                print("sippai")
+                return None
         else:
-            response = requests.post('http://www.example.com', data={'status': status})
+            try:
+                response = requests.post(self._request_pass ,headers=headers, json={'status': status},timeout=(2.0,2.0))
+            except:
+                print("sippai")
+                return None
 
         if response.status_code!=200:
+            print("sute-tasuko-dogakuso")
             return None
-        if response.json()["message"] != "success":
-            return None
-        
+        print("POSTed")
         return True
 
 if __name__=="__main__":
