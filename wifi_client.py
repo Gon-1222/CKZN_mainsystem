@@ -82,8 +82,11 @@ class WifiClient():
         print("setting_wpa")
         subprocess.run(['wpa_cli', '-i', 'wlan0', 'reconfigure'])
         print("setting_dhcp")
-        subprocess.run(['sudo','dhclient','-1','wlan0','&'])
+        subprocess.run(['sudo','dhclient','wlan0','-b'])
         return True
+    
+
+    
 if __name__=="__main__":
     import requests
     tester=WifiClient()

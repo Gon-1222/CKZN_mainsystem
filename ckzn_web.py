@@ -37,19 +37,19 @@ class WebIO():
             try:
                 response = requests.post(self._request_pass ,headers=headers, json={'status': status},proxies=proxies,timeout=(2.0,2.0))
             except:
-                print("sippai")
+                print("Timeout")
                 return None
         else:
             try:
                 response = requests.post(self._request_pass ,headers=headers, json={'status': status},timeout=(2.0,2.0))
             except:
-                print("sippai")
+                print("Timeout")
                 return None
 
         if response.status_code!=200:
-            print("sute-tasuko-dogakuso")
+            print("Status Error")
             return None
-        print("POSTed")
+        print("success POST")
         return True
 
 if __name__=="__main__":

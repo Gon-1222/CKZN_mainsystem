@@ -18,4 +18,4 @@ def index():
         return "OK"
     return render_template('form.html')
 
-app.run(host="0.0.0.0",port=5000,debug=True)
+app.run(host="0.0.0.0",port=5000,debug=False)

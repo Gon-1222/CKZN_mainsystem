@@ -8,8 +8,8 @@ class WifiAP():
         if ret:
             return False
         print("server.py")
-        args = shlex.split("sudo python server.py")
-        self.proc = subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        #args = shlex.split("sudo python server.py")
+        #self.proc = subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
         
         return True
 
@@ -19,10 +19,10 @@ class WifiAP():
         ret = subprocess.call(args)
         if ret:
             return False
-        try:
-            self.proc.kill()
-        except:
-            pass
+        #try:
+         #   self.proc.kill()
+        #except:
+         #   pass
 
         return True
 if __name__=="__main__":

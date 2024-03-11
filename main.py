@@ -17,12 +17,14 @@ auto_mode: bool = True
 current_mode: int = START_MODE
 send_time:int = 20  #IR送信時間
 ir_start_time:int = 0
+retry:bool =False
+
 #インスタンス生成
 digital_io = Pin()
-#serial_io = Chirial()
 http_io = WebIO()
 wifi_client = WifiClient()
 wifi_ap = WifiAP()
+#serial_io = Chirial()
 #前処理
 #wifi_ap.disconnect()
 #wifi_client.connect()
@@ -34,32 +36,40 @@ try:
         #---ステータス変更部---
         #APモード起動
         sw_mode = digital_io.check_mode()
-        if (sw_mode==SETTING_MODE and current_mode!=SETTING_MODE):
+        if (sw_mode == SETTING_MODE and current_mode != SETTING_MODE):
             print("SETTING_MODE_INITIALIZING...")
-            wifi_ap.connect()
-            wifi_client.disconnect()
+            digital_io.digital_write("err_out", True)
+            #wifi_ap.connect()
+            #wifi_client.disconnect()
             current_mode=SETTING_MODE
             print("SETTING_MODE_STARTED.")
+            digital_io.digital_write("err_out", False)
 
         #手動モード起動
         elif sw_mode==MANUAL_MODE and current_mode!=MANUAL_MODE:
             print("MANUAL_MODE_INITIALIZING...")
+            digital_io.digital_write("err_out", True)
+
             if (current_mode==SETTING_MODE or current_mode==START_MODE):
-                wifi_ap.disconnect()
+                #wifi_ap.disconnect()
                 wifi_client.reconnect()
             status = 0
             current_mode=MANUAL_MODE
             print("MANUAL_MODE_STARTED.")
+            digital_io.digital_write("err_out", False)
 
         #自動モード起動
         elif sw_mode==AUTO_MODE and current_mode!=AUTO_MODE:
             print("AUTO_MODE_INITIALIZING...")
+            digital_io.digital_write("err_out", True)
+
             if (current_mode==SETTING_MODE or current_mode==START_MODE):
-                wifi_ap.disconnect()
+                #wifi_ap.disconnect()
                 wifi_client.reconnect()
             status = 0
             current_mode=AUTO_MODE
             print("AUTO_MODE_STARTED.")
+            digital_io.digital_write("err_out", False)
 
         #自動モード動作
         if current_mode == AUTO_MODE:
@@ -74,16 +84,22 @@ try:
             print(status)
 
         #---LED出力/Webサーバに反映---
-        if pre_status != status:
+        if pre_status != status or (retry and (time.time() - retry_time_start)>5):
             pre_status=status
             print(pre_status)
             digital_io.set_led_stat(status)
-            if current_mode!=SETTING_MODE:
+            if current_mode!=SETTING_MODE :
                 buf = wifi_client.read_proxy()
                 try:
                     if http_io.post_status(status,proxy=buf)!=None:
                         print("OK!")
-                        pre_status = 5
+                        retry=False
+                        digital_io.digital_write("err_out",False)
+                    else:
+                        retry=True
+                        retry_time_start=time.time()
+                        digital_io.digital_write("err_out",True)
+
                 except:
                     pass
 
