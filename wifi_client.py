@@ -61,22 +61,23 @@ class WifiClient():
         password=self._data[2]
         
 
-
         network_info="ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\nupdate_config=1\ncountry=JP\n\n"
         # 新しいネットワーク情報を作成
         network_info += f'network={{\n\tssid="{ssid}"\n'
 
         if not(identity) and password:
+            python("Connect as Normal Mode")
             network_info += f'\tpsk="{password}"\n'
 
         if identity and password:
+            python("Connect as Enterprise Mode")
             network_info += f'\tkey_mgmt=WPA-EAP\n\teap=PEAP\n\tidentity="{identity}"\n\tpassword="{password}"\n\tphase1="peaplabel=0"\n\tphase2="auth=MSCHAPV2"\n'
 
         network_info += '}'
-
+        print(network_info)
         # wpa_supplicant.confを書き換え
         with open('/etc/wpa_supplicant/wpa_supplicant.conf', 'w') as file:
-            file.write(network_info)
+            file.write("WPA_Config:"network_info)
         time.sleep(2.0)
         # WiFi設定を再読み込みして変更を反映
         print("setting_wpa")
