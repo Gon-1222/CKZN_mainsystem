@@ -74,10 +74,10 @@ class WifiClient():
             network_info += f'\tkey_mgmt=WPA-EAP\n\teap=PEAP\n\tidentity="{identity}"\n\tpassword="{password}"\n\tphase1="peaplabel=0"\n\tphase2="auth=MSCHAPV2"\n'
 
         network_info += '}'
-        print(network_info)
+        print("WPA_Config:",network_info)
         # wpa_supplicant.confを書き換え
         with open('/etc/wpa_supplicant/wpa_supplicant.conf', 'w') as file:
-            file.write("WPA_Config:"network_info)
+            file.write(network_info)
         time.sleep(2.0)
         # WiFi設定を再読み込みして変更を反映
         print("setting_wpa")
